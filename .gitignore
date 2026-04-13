@@ -15,5 +15,3 @@ venv/
 
 .DS_Store
 
-# Output directory
-Results/
