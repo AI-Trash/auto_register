@@ -1,0 +1,8 @@
+example1@outlook.com----Password123!
+example2@outlook.com----SecurePass456
+example3@outlook.com----MyPassword789
+
+# 格式说明：
+# 每行一个账号，格式为：邮箱----密码
+# 使用 ---- 作为分隔符
+# 支持 # 开头的注释行
