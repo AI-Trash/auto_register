@@ -1,0 +1,12 @@
+{
+    "outlook_accounts_file": "邮箱文件.txt",
+    "proxy": "http://127.0.0.1:7897",
+    "output_file": "Results/registered_accounts.txt",
+    "batch_size": 2,
+    "headless": false,
+    "wait_timeout": 30000,
+    "manual_otp": false,
+    "auto_continue": true,
+    "outlook_client_id": "<你的ClientID>",
+    "browser_engine": "patchright"
+}

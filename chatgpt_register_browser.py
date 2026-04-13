@@ -1,6 +1,6 @@
 """
-ChatGPT 批量自动注册工具 - 基于 Patchright 浏览器版
-依赖: pip install patchright requests
+ChatGPT 批量自动注册工具 - 浏览器版
+依赖: patchright / playwright / peachwright（三选一）+ requests
 功能: 使用 Outlook 邮箱 + Patchright 浏览器自动注册 ChatGPT 账号
 """
 
@@ -10,15 +10,15 @@ import json
 import random
 import time
 import threading
-from patchright.sync_api import sync_playwright
-from outlook_mail_reader import OutlookAccountPool, OutlookMailReader
+import importlib
+from outlook_token_reader import OutlookAccountPool, OutlookMailReader
 
 
 # ================= 加载配置 =================
 def _load_config():
     """从 config.json 加载配置"""
     config = {
-        "outlook_accounts_file": "../第二组100个邮箱_副本.txt",
+        "outlook_accounts_file": "邮箱文件.txt",
         "proxy": "http://127.0.0.1:7897",
         "output_file": "openai_accounts.txt",
         "batch_size": 5,
@@ -26,6 +26,8 @@ def _load_config():
         "wait_timeout": 30000,
         "manual_otp": False,
         "auto_continue": True,
+        "outlook_client_id": "dbc8e03a-b00c-46bd-ae65-b683e7707cb0",
+        "browser_engine": "patchright",
     }
 
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config_browser.json")
@@ -49,6 +51,44 @@ WAIT_TIMEOUT = _CONFIG["wait_timeout"]
 MANUAL_OTP = _CONFIG.get("manual_otp", False)
 BATCH_SIZE = _CONFIG.get("batch_size", 5)
 AUTO_CONTINUE = _CONFIG.get("auto_continue", True)
+OUTLOOK_CLIENT_ID = _CONFIG.get("outlook_client_id")
+BROWSER_ENGINE = str(_CONFIG.get("browser_engine", "patchright")).strip().lower()
+
+
+def _load_sync_playwright(engine_name):
+    """按配置加载浏览器引擎的 sync_playwright。"""
+    engine_modules = {
+        "patchright": "patchright.sync_api",
+        "playwright": "playwright.sync_api",
+        "peachwright": "peachwright.sync_api",
+    }
+
+    if engine_name not in engine_modules:
+        raise RuntimeError(
+            f"不支持的 browser_engine: {engine_name}，"
+            f"可选值: patchright / playwright / peachwright"
+        )
+
+    module_name = engine_modules[engine_name]
+    try:
+        mod = importlib.import_module(module_name)
+    except ModuleNotFoundError:
+        raise RuntimeError(
+            f"未安装引擎依赖: {module_name}，请先安装后重试。"
+        )
+
+    if not hasattr(mod, "sync_playwright"):
+        raise RuntimeError(f"引擎模块缺少 sync_playwright: {module_name}")
+
+    return mod.sync_playwright
+
+
+try:
+    SYNC_PLAYWRIGHT = _load_sync_playwright(BROWSER_ENGINE)
+    ENGINE_LOAD_ERROR = None
+except Exception as _e:
+    SYNC_PLAYWRIGHT = None
+    ENGINE_LOAD_ERROR = str(_e)
 
 # 全局账号池
 ACCOUNT_POOL = None
@@ -60,7 +100,10 @@ def init_account_pool():
     global ACCOUNT_POOL
     with ACCOUNT_POOL_LOCK:
         if ACCOUNT_POOL is None:
-            ACCOUNT_POOL = OutlookAccountPool(OUTLOOK_ACCOUNTS_FILE)
+            ACCOUNT_POOL = OutlookAccountPool(
+                OUTLOOK_ACCOUNTS_FILE,
+                default_client_id=OUTLOOK_CLIENT_ID
+            )
 
 
 def generate_password_from_outlook(outlook_password):
@@ -129,9 +172,12 @@ def register_chatgpt_with_browser(mail_reader: OutlookMailReader, proxy=None, he
     context = None
 
     try:
+        if ENGINE_LOAD_ERROR:
+            return False, email, chatgpt_password, f"浏览器引擎加载失败: {ENGINE_LOAD_ERROR}"
+
         # 启动浏览器
         print(f"[{email}] 启动浏览器...")
-        playwright = sync_playwright().start()
+        playwright = SYNC_PLAYWRIGHT().start()
 
         proxy_settings = {
             "server": proxy,
@@ -890,8 +936,14 @@ def main():
     if proxy:
         print(f"[Info] 代理: {proxy}")
     print(f"[Info] 无头模式: {headless}")
+    print(f"[Info] 浏览器引擎: {BROWSER_ENGINE}")
     print(f"[Info] 账号文件: {OUTLOOK_ACCOUNTS_FILE}")
     print(f"[Info] 输出文件: {DEFAULT_OUTPUT_FILE}")
+
+    if ENGINE_LOAD_ERROR:
+        print(f"[Error] 浏览器引擎加载失败: {ENGINE_LOAD_ERROR}")
+        print("[Hint] 请安装对应依赖，或在 config_browser.json 将 browser_engine 改为可用值。")
+        return
 
     run_all_batches(
         batch_size=BATCH_SIZE,

@@ -8,30 +8,12 @@ __pycache__/
 # Virtual Environment
 venv/
 .venv/
-env/
 
 # IDE
 .vscode/
 .idea/
 
-# OS
 .DS_Store
-Thumbs.db
-
-# Config (contains sensitive info)
-config_browser.json
-
-# Input files (contains account data)
-第*.txt
-*邮箱*.txt
-!邮箱文件.txt
 
 # Output directory
 Results/
-
-# Logs
-*.log
-*.tmp
-
-# Progress files
-.progress

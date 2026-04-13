@@ -1,6 +1,4 @@
-example1@outlook.com----Password123!
-example2@outlook.com----SecurePass456
-example3@outlook.com----MyPassword789
+StephaniePacheco6841@outlook.com----ununsyv804294----dbc8e03a-b00c-46bd-ae65-b683e7707cb0----M.C549_BAY.0.U.-CpR8zfIkj7JxIw3qr5bkg70ogVjzmEy!OIGAOu!Gcw*4psQSGPEGkTHqcpNFmENwdUzSkAyeFGpHfWRMSC9fBPouf!HPyJAkK8VDyW8T*60m0CVwTFN7zTUdHDhszaF037faedIPsR5oBMFPVnrunaEjTnw0I5N8zrOOH1Gw2zFeIrZyOzyrsYKiQsxMszorD3NR!DBx*4HvKFKA0cDeveAZzonWPTaSd0n4Z2sTG!k2uGlDdcOdp1QgipQct8kkmOkWK42Wbhh6lrpaIzKnoNvtqHvi6UF91XAPir1ktOhjAp1PCk8N19QCkOsWVzIFJ0fR7hhOi**xX16bkuw602aQCL29kUjlJkzv65ogRibG
 
 # 格式说明：
 # 每行一个账号，格式为：邮箱----密码

@@ -1,12 +1,17 @@
-# ChatGPT 批量注册工具 - 浏览器自动化版
+# ChatGPT 辅助注册工具 
 
-基于 Playwright 的 ChatGPT 账号批量注册工具，使用 Outlook 邮箱进行注册。
+## 免责申明
+- 本工具仅供学习和研究使用，请勿用于任何商业或非法用途。
+- 使用者需自行承担使用风险，开发者不对任何因使用本工具而产生的后果负责。
+- 如有侵权如有侵权，请联系删除。
+
+基于 Patchright/Playwright 的 ChatGPT 账号辅助注册工具，使用 Outlook 邮箱进行注册。
 
 ## 特性
 
 - 🚀 使用浏览器自动化，模拟真实用户操作
 - 📧 自动读取 Outlook 邮箱验证码
-- 🔄 支持批量并行注册（每组 3 个账号）
+- 🔄 支持批量并行注册
 - 💾 自动保存注册成功的账号信息
 - 🔁 支持断点续传，失败后可继续
 - 🌐 支持代理设置
@@ -32,6 +37,18 @@ pip install patchright
 python -m patchright install chromium
 ```
 
+可选引擎（任选其一）：
+
+```bash
+# Patchright（默认）
+pip install patchright
+python -m patchright install chromium
+
+# Playwright
+pip install playwright
+python -m playwright install chromium
+```
+
 ## 配置
 
 编辑 `config_browser.json`：
@@ -42,7 +59,12 @@ python -m patchright install chromium
     "output_file": "Results/registered_accounts.txt",
     "proxy": "http://127.0.0.1:7897",
     "headless": false,
-    "batch_size": 3
+    "batch_size": 3,
+    "wait_timeout": 30000,
+    "manual_otp": false,
+    "auto_continue": true,
+    "outlook_client_id": "<你的ClientID>",
+    "browser_engine": "patchright"
 }
 ```
 
@@ -55,24 +77,36 @@ python -m patchright install chromium
 | proxy | 代理地址（支持 http/https/socks5） | null |
 | headless | 是否无头模式运行 | false |
 | batch_size | 每组并行注册的账号数量 | 3 |
+| wait_timeout | 页面等待超时（毫秒） | 30000 |
+| manual_otp | 手动输入验证码（true=不自动抓取邮箱验证码） | false |
+| auto_continue | 每组完成后自动继续下一组 | true |
+| outlook_client_id | 全局默认 Microsoft OAuth Client ID（账号行未提供 client_id 时使用） | <你的ClientID> |
+| browser_engine | 浏览器引擎（patchright / playwright / peachwright） | patchright |
 
 ## 邮箱文件格式
 
 创建 `邮箱文件.txt`，每行一个账号，格式：
+
+推荐（自动收码）：
+```
+邮箱----密码----client_id----refresh_token
+```
+
+兼容（仅手动输入验证码时可用）：
 ```
 邮箱----密码
 ```
 
 示例（参考 `邮箱文件.txt`）：
 ```
-example1@outlook.com----Password123!
-example2@outlook.com----SecurePass456
-example3@outlook.com----MyPassword789
+example1@outlook.com----Password123!----<ClientID>----<RefreshToken>
+example2@outlook.com----SecurePass456----<ClientID>----<RefreshToken>
 ```
 
 注意：
 - 使用 `----` 作为分隔符（4个短横线）
 - 支持 `#` 开头的注释行
+- 自动读取验证码时，需要可用的 `refresh_token`
 - 密码建议包含大小写字母、数字和特殊字符
 
 ## 使用方法
@@ -85,6 +119,10 @@ example3@outlook.com----MyPassword789
 source venv/bin/activate
 python chatgpt_register_browser.py
 ```
+
+补充：
+- 使用 `邮箱----密码` 简化格式时，请将 `manual_otp` 设为 `true`
+- 使用自动收码时，请保持 `manual_otp=false` 且提供可用 `refresh_token`
 
 ## 输出格式
 
@@ -103,16 +141,25 @@ example2@outlook.com----SecurePass45688888888
 
 ## 工作流程
 
-1. 从配置文件读取 Outlook 邮箱列表
-2. 每组启动 3 个浏览器并行注册
-3. 访问 ChatGPT 注册页面
-4. 输入邮箱地址
-5. 自动读取 Outlook 邮箱中的验证码
-6. 填写验证码和生日信息
-7. 设置密码（原密码 + "888"）
-8. 保存注册成功的账号
-9. 完成一组后暂停，等待手动切换 IP
-10. 继续下一组
+程序会自动识别页面分支，并走以下两条注册线路之一：
+
+### 线路 1（先验证码）
+
+1. 输入邮箱
+2. 读取并填写邮箱验证码
+3. 填写姓名 + 生日
+4. 设置密码
+5. 保存成功账号
+
+### 线路 2（先密码）
+
+1. 输入邮箱
+2. 先设置密码
+3. 读取并填写邮箱验证码
+4. 填写姓名 + 年龄
+5. 保存成功账号
+
+> 说明：线路由页面状态自动判断，无需手动选择。
 
 ## 注意事项
 
@@ -142,7 +189,7 @@ python -m patchright install chromium
 ## 文件说明
 
 - `chatgpt_register_browser.py` - 主程序
-- `outlook_browser_reader.py` - Outlook 邮箱验证码读取模块
+- `outlook_token_reader.py` - Outlook 验证码读取模块（Graph API）
 - `config_browser.json` - 配置文件
 - `邮箱文件.txt` - 邮箱账号列表示例
 - `Results/` - 输出目录（注册成功的账号）
@@ -150,4 +197,6 @@ python -m patchright install chromium
 
 ## 致谢
 
-本项目基于 https://github.com/adminlove520/chatgpt_register 改造而来。
+本项目灵感来源于https://github.com/LainsNL/OutlookRegister
+
+如需兼容其他邮箱服务商，欢迎提交 PR！
