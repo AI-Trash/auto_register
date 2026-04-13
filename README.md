@@ -199,4 +199,4 @@ python -m patchright install chromium
 
 本项目灵感来源于https://github.com/LainsNL/OutlookRegister
 
-如需兼容其他邮箱服务商，欢迎提交 PR！
+如需兼容其他邮箱服务商，欢迎讨论！
