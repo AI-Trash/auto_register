@@ -97,7 +97,7 @@ python -m playwright install chromium
 邮箱----密码
 ```
 
-示例（参考 `邮箱文件.txt`）：
+示例：
 ```
 example1@outlook.com----Password123!----<ClientID>----<RefreshToken>
 example2@outlook.com----SecurePass456----<ClientID>----<RefreshToken>
