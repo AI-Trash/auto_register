@@ -1,0 +1,11 @@
+# auto_register 依赖
+
+# HTTP 库（二选一，curl_cffi 推荐）
+curl_cffi>=0.7.0     # 推荐 - 带 TLS 浏览器指纹，通过率高
+requests>=2.28.0     # 回退方案 - 纯 Python，无浏览器指纹
+
+# 浏览器版注册 (chatgpt_register_browser.py)
+# 三选一，按需安装
+# patchright>=1.0.0
+# playwright>=1.40.0
+# peachwright>=1.0.0

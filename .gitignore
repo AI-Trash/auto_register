@@ -12,6 +12,6 @@ venv/
 # IDE
 .vscode/
 .idea/
-
+Results/
 .DS_Store
 
